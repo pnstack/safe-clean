@@ -65,7 +65,7 @@ impl DirAnalyzer {
             }
 
             // Sort by size (largest first)
-            items.sort_by(|a, b| b.size.cmp(&a.size));
+            items.sort_by_key(|b| std::cmp::Reverse(b.size));
             Ok(items)
         })
         .await?
@@ -116,7 +116,7 @@ impl LargeFileFinder {
             }
 
             // Sort by size (largest first)
-            large_files.sort_by(|a, b| b.size.cmp(&a.size));
+            large_files.sort_by_key(|b| std::cmp::Reverse(b.size));
             Ok(large_files)
         })
         .await?
@@ -168,7 +168,7 @@ impl DevArtifactFinder {
             }
 
             // Sort by size (largest first)
-            artifacts.sort_by(|a, b| b.size.cmp(&a.size));
+            artifacts.sort_by_key(|b| std::cmp::Reverse(b.size));
             Ok(artifacts)
         })
         .await?
