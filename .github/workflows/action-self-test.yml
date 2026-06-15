@@ -1,0 +1,54 @@
+name: Test Safe Clean Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "safe-clean version to install, e.g. latest or v0.1.0"
+        required: false
+        default: "latest"
+
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  test-action:
+    name: Test action on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "version=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install safe-clean via local action
+        uses: ./
+        with:
+          version: ${{ steps.version.outputs.version }}
+
+      - name: Check binary
+        shell: bash
+        run: |
+          which safe-clean
+          safe-clean --help
