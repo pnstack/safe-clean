@@ -1,9 +1,9 @@
-use anyhow::Result;
-use std::path::Path;
-use std::fs;
-use walkdir::WalkDir;
-use dialoguer::Confirm;
 use crate::utils::format_size;
+use anyhow::Result;
+use dialoguer::Confirm;
+use std::fs;
+use std::path::Path;
+use walkdir::WalkDir;
 
 pub async fn cleanup(dry_run: bool) -> Result<()> {
     println!("🗂️  System Temporary Files Cleanup");
@@ -33,12 +33,18 @@ pub async fn cleanup(dry_run: bool) -> Result<()> {
     println!("   Total files: {}", total_files);
 
     if dry_run {
-        println!("\n[DRY RUN] Would clean {} of temporary files", format_size(total_size));
+        println!(
+            "\n[DRY RUN] Would clean {} of temporary files",
+            format_size(total_size)
+        );
         return Ok(());
     }
 
     if Confirm::new()
-        .with_prompt(&format!("Clean up {} of temporary files?", format_size(total_size)))
+        .with_prompt(&format!(
+            "Clean up {} of temporary files?",
+            format_size(total_size)
+        ))
         .interact()?
     {
         for temp_dir in &temp_dirs {
@@ -52,7 +58,7 @@ pub async fn cleanup(dry_run: bool) -> Result<()> {
 
 fn get_temp_directories() -> Vec<std::path::PathBuf> {
     let mut dirs = Vec::new();
-    
+
     // Common system temp directories
     if let Some(temp) = std::env::var_os("TMPDIR") {
         dirs.push(std::path::PathBuf::from(temp));
@@ -63,11 +69,11 @@ fn get_temp_directories() -> Vec<std::path::PathBuf> {
     if let Some(temp) = std::env::var_os("TEMP") {
         dirs.push(std::path::PathBuf::from(temp));
     }
-    
+
     // Standard locations
     dirs.push("/tmp".into());
     dirs.push("/var/tmp".into());
-    
+
     // User-specific temp directories
     if let Some(home) = std::env::var_os("HOME") {
         let home_path = std::path::PathBuf::from(home);
@@ -92,7 +98,7 @@ fn get_temp_directories() -> Vec<std::path::PathBuf> {
 
 async fn analyze_temp_dir(path: &Path) -> Result<Option<(u64, usize)>> {
     let path = path.to_owned();
-    
+
     tokio::task::spawn_blocking(move || {
         if !path.exists() || !path.is_dir() {
             return Ok(None);
@@ -122,20 +128,21 @@ async fn analyze_temp_dir(path: &Path) -> Result<Option<(u64, usize)>> {
         } else {
             Ok(None)
         }
-    }).await?
+    })
+    .await?
 }
 
 fn is_safe_temp_file(path: &Path) -> bool {
     if let Some(file_name) = path.file_name() {
         if let Some(name_str) = file_name.to_str() {
             // Common temporary file patterns
-            return name_str.starts_with("tmp") ||
-                   name_str.starts_with("temp") ||
-                   name_str.ends_with(".tmp") ||
-                   name_str.ends_with(".temp") ||
-                   name_str.ends_with(".cache") ||
-                   name_str.starts_with(".#") ||
-                   name_str.ends_with("~");
+            return name_str.starts_with("tmp")
+                || name_str.starts_with("temp")
+                || name_str.ends_with(".tmp")
+                || name_str.ends_with(".temp")
+                || name_str.ends_with(".cache")
+                || name_str.starts_with(".#")
+                || name_str.ends_with("~");
         }
     }
     false
@@ -143,7 +150,7 @@ fn is_safe_temp_file(path: &Path) -> bool {
 
 async fn cleanup_temp_dir(path: &Path) -> Result<()> {
     let path = path.to_owned();
-    
+
     tokio::task::spawn_blocking(move || {
         let mut cleaned_files = 0;
         let mut cleaned_size = 0u64;
@@ -159,10 +166,14 @@ async fn cleanup_temp_dir(path: &Path) -> Result<()> {
                         Ok(_) => {
                             cleaned_files += 1;
                             cleaned_size += metadata.len();
-                        },
+                        }
                         Err(e) => {
                             // Don't fail the entire operation for individual file errors
-                            eprintln!("   Warning: Failed to remove {}: {}", entry.path().display(), e);
+                            eprintln!(
+                                "   Warning: Failed to remove {}: {}",
+                                entry.path().display(),
+                                e
+                            );
                         }
                     }
                 }
@@ -170,9 +181,14 @@ async fn cleanup_temp_dir(path: &Path) -> Result<()> {
         }
 
         if cleaned_files > 0 {
-            println!("   ✅ Cleaned {} files ({})", cleaned_files, format_size(cleaned_size));
+            println!(
+                "   ✅ Cleaned {} files ({})",
+                cleaned_files,
+                format_size(cleaned_size)
+            );
         }
 
         Ok(())
-    }).await?
+    })
+    .await?
 }

@@ -1,3 +1,5 @@
+use crate::discovery::{DevArtifactFinder, DirAnalyzer, FileItem, LargeFileFinder};
+use crate::utils::format_size;
 use anyhow::Result;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
@@ -12,8 +14,6 @@ use ratatui::{
     Frame, Terminal,
 };
 use std::{io, path::Path};
-use crate::discovery::{DirAnalyzer, LargeFileFinder, DevArtifactFinder, FileItem};
-use crate::utils::format_size;
 
 #[derive(Debug, Clone)]
 enum MenuOption {
@@ -163,10 +163,16 @@ impl App {
                     self.items_state.select(Some(0));
                 }
                 MenuOption::DockerCleanup => {
-                    self.message = Some("Docker cleanup functionality requires CLI mode. Use: safe-clean docker".to_string());
+                    self.message = Some(
+                        "Docker cleanup functionality requires CLI mode. Use: safe-clean docker"
+                            .to_string(),
+                    );
                 }
                 MenuOption::TempCleanup => {
-                    self.message = Some("Temp cleanup functionality requires CLI mode. Use: safe-clean temp".to_string());
+                    self.message = Some(
+                        "Temp cleanup functionality requires CLI mode. Use: safe-clean temp"
+                            .to_string(),
+                    );
                 }
                 MenuOption::Exit => {
                     return Ok(true);
@@ -184,7 +190,9 @@ impl App {
 
     async fn load_large_files(&mut self) -> Result<()> {
         let finder = LargeFileFinder::new();
-        self.items = finder.find_large_files(Path::new("."), 100 * 1024 * 1024).await?; // 100MB threshold
+        self.items = finder
+            .find_large_files(Path::new("."), 100 * 1024 * 1024)
+            .await?; // 100MB threshold
         Ok(())
     }
 
@@ -247,28 +255,22 @@ async fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
                             app.back_to_menu();
                         }
                     }
-                    KeyCode::Enter => {
-                        match app.current_view {
-                            AppView::Menu => {
-                                if app.execute_menu_action().await? {
-                                    break;
-                                }
+                    KeyCode::Enter => match app.current_view {
+                        AppView::Menu => {
+                            if app.execute_menu_action().await? {
+                                break;
                             }
-                            _ => {}
                         }
-                    }
-                    KeyCode::Up => {
-                        match app.current_view {
-                            AppView::Menu => app.previous_menu_item(),
-                            _ => app.previous_item(),
-                        }
-                    }
-                    KeyCode::Down => {
-                        match app.current_view {
-                            AppView::Menu => app.next_menu_item(),
-                            _ => app.next_item(),
-                        }
-                    }
+                        _ => {}
+                    },
+                    KeyCode::Up => match app.current_view {
+                        AppView::Menu => app.previous_menu_item(),
+                        _ => app.previous_item(),
+                    },
+                    KeyCode::Down => match app.current_view {
+                        AppView::Menu => app.next_menu_item(),
+                        _ => app.next_item(),
+                    },
                     _ => {}
                 }
             }
@@ -290,7 +292,11 @@ fn ui(f: &mut Frame, app: &mut App) {
 
     // Header
     let header = Paragraph::new("Safe Clean - Disk Cleanup Tool")
-        .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+        .style(
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        )
         .alignment(Alignment::Center)
         .block(Block::default().borders(Borders::ALL));
     f.render_widget(header, chunks[0]);
@@ -310,7 +316,7 @@ fn ui(f: &mut Frame, app: &mut App) {
     } else {
         "h: Help | q: Quit"
     };
-    
+
     let footer = Paragraph::new(footer_text)
         .style(Style::default().fg(Color::Yellow))
         .alignment(Alignment::Center)
@@ -332,7 +338,11 @@ fn render_menu(f: &mut Frame, app: &mut App, area: Rect) {
 
     let list = List::new(items)
         .block(Block::default().borders(Borders::ALL).title("Main Menu"))
-        .highlight_style(Style::default().bg(Color::Blue).add_modifier(Modifier::BOLD))
+        .highlight_style(
+            Style::default()
+                .bg(Color::Blue)
+                .add_modifier(Modifier::BOLD),
+        )
         .highlight_symbol("► ");
 
     f.render_stateful_widget(list, area, &mut app.menu_state);
@@ -353,25 +363,29 @@ fn render_items_list(f: &mut Frame, app: &mut App, area: Rect, title: &str) {
         .map(|item| {
             let path_str = item.path.to_string_lossy();
             let display_path = if path_str.len() > 60 {
-                format!("...{}", &path_str[path_str.len()-57..])
+                format!("...{}", &path_str[path_str.len() - 57..])
             } else {
                 path_str.to_string()
             };
-            
+
             let size_str = format_size(item.size);
             let line = if let Some(count) = item.item_count {
                 format!("{:<60} {:>10} {:>8} items", display_path, size_str, count)
             } else {
                 format!("{:<60} {:>10}", display_path, size_str)
             };
-            
+
             ListItem::new(line)
         })
         .collect();
 
     let list = List::new(items)
         .block(Block::default().borders(Borders::ALL).title(title))
-        .highlight_style(Style::default().bg(Color::Blue).add_modifier(Modifier::BOLD))
+        .highlight_style(
+            Style::default()
+                .bg(Color::Blue)
+                .add_modifier(Modifier::BOLD),
+        )
         .highlight_symbol("► ");
 
     f.render_stateful_widget(list, area, &mut app.items_state);
@@ -387,7 +401,7 @@ fn render_loading(f: &mut Frame, area: Rect) {
 fn render_message_popup(f: &mut Frame, message: &str) {
     let area = centered_rect(60, 20, f.size());
     f.render_widget(Clear, area);
-    
+
     let paragraph = Paragraph::new(message)
         .wrap(Wrap { trim: true })
         .block(Block::default().borders(Borders::ALL).title("Information"))

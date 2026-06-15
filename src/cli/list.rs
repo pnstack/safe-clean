@@ -1,7 +1,7 @@
-use anyhow::Result;
-use std::path::Path;
 use crate::discovery::DirAnalyzer;
 use crate::utils::format_size;
+use anyhow::Result;
+use std::path::Path;
 
 pub async fn run(path: Option<String>, top: usize) -> Result<()> {
     let target_path = path.unwrap_or_else(|| ".".to_string());
@@ -20,7 +20,10 @@ pub async fn run(path: Option<String>, top: usize) -> Result<()> {
         println!(
             "{:<50} {:>15} {:>10}",
             if item.path.to_string_lossy().len() > 47 {
-                format!("...{}", &item.path.to_string_lossy()[item.path.to_string_lossy().len()-44..])
+                format!(
+                    "...{}",
+                    &item.path.to_string_lossy()[item.path.to_string_lossy().len() - 44..]
+                )
             } else {
                 item.path.to_string_lossy().to_string()
             },

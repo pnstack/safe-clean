@@ -1,14 +1,18 @@
-use anyhow::Result;
-use std::path::Path;
 use crate::discovery::LargeFileFinder;
 use crate::utils::{format_size, parse_size};
+use anyhow::Result;
+use std::path::Path;
 
 pub async fn run(path: Option<String>, size_str: String) -> Result<()> {
     let target_path = path.unwrap_or_else(|| ".".to_string());
     let path = Path::new(&target_path);
     let min_size = parse_size(&size_str)?;
 
-    println!("Searching for files larger than {} in: {}", format_size(min_size), path.display());
+    println!(
+        "Searching for files larger than {} in: {}",
+        format_size(min_size),
+        path.display()
+    );
     println!();
 
     let finder = LargeFileFinder::new();
@@ -26,7 +30,10 @@ pub async fn run(path: Option<String>, size_str: String) -> Result<()> {
         println!(
             "{:<60} {:>15}",
             if item.path.to_string_lossy().len() > 57 {
-                format!("...{}", &item.path.to_string_lossy()[item.path.to_string_lossy().len()-54..])
+                format!(
+                    "...{}",
+                    &item.path.to_string_lossy()[item.path.to_string_lossy().len() - 54..]
+                )
             } else {
                 item.path.to_string_lossy().to_string()
             },

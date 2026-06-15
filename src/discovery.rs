@@ -18,12 +18,16 @@ impl DirAnalyzer {
         Self
     }
 
-    pub async fn analyze_directory(&self, path: &Path, include_subdirs: bool) -> Result<Vec<FileItem>> {
+    pub async fn analyze_directory(
+        &self,
+        path: &Path,
+        include_subdirs: bool,
+    ) -> Result<Vec<FileItem>> {
         let path = path.to_owned();
-        
+
         task::spawn_blocking(move || {
             let mut items = Vec::new();
-            
+
             if !path.exists() {
                 return Ok(items);
             }
@@ -65,13 +69,14 @@ impl DirAnalyzer {
             // Sort by size (largest first)
             items.sort_by(|a, b| b.size.cmp(&a.size));
             Ok(items)
-        }).await?
+        })
+        .await?
     }
 }
 
 fn calculate_dir_size(path: &Path) -> Result<u64> {
     let mut total_size = 0;
-    
+
     for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
         if let Ok(metadata) = entry.metadata() {
             if metadata.is_file() {
@@ -79,7 +84,7 @@ fn calculate_dir_size(path: &Path) -> Result<u64> {
             }
         }
     }
-    
+
     Ok(total_size)
 }
 
@@ -96,10 +101,10 @@ impl LargeFileFinder {
 
     pub async fn find_large_files(&self, path: &Path, min_size: u64) -> Result<Vec<FileItem>> {
         let path = path.to_owned();
-        
+
         task::spawn_blocking(move || {
             let mut large_files = Vec::new();
-            
+
             for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
                 if let Ok(metadata) = entry.metadata() {
                     if metadata.is_file() && metadata.len() >= min_size {
@@ -116,7 +121,8 @@ impl LargeFileFinder {
             // Sort by size (largest first)
             large_files.sort_by(|a, b| b.size.cmp(&a.size));
             Ok(large_files)
-        }).await?
+        })
+        .await?
     }
 }
 
@@ -129,11 +135,20 @@ impl DevArtifactFinder {
 
     pub async fn find_artifacts(&self, path: &Path) -> Result<Vec<FileItem>> {
         let path = path.to_owned();
-        
+
         task::spawn_blocking(move || {
             let mut artifacts = Vec::new();
-            let target_dirs = ["node_modules", ".venv", "venv", "__pycache__", ".tox", "target", "build", "dist"];
-            
+            let target_dirs = [
+                "node_modules",
+                ".venv",
+                "venv",
+                "__pycache__",
+                ".tox",
+                "target",
+                "build",
+                "dist",
+            ];
+
             for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
                 if let Ok(metadata) = entry.metadata() {
                     if metadata.is_dir() {
@@ -142,7 +157,7 @@ impl DevArtifactFinder {
                                 if target_dirs.contains(&name_str) {
                                     let size = calculate_dir_size(entry.path())?;
                                     let item_count = count_items(entry.path())?;
-                                    
+
                                     artifacts.push(FileItem {
                                         path: entry.path().to_owned(),
                                         size,
@@ -159,6 +174,7 @@ impl DevArtifactFinder {
             // Sort by size (largest first)
             artifacts.sort_by(|a, b| b.size.cmp(&a.size));
             Ok(artifacts)
-        }).await?
+        })
+        .await?
     }
 }

@@ -1,10 +1,10 @@
-use clap::{Parser, Subcommand};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 
-mod cli;
-mod tui;
 mod cleanup;
+mod cli;
 mod discovery;
+mod tui;
 mod utils;
 
 #[derive(Parser)]

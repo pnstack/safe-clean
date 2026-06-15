@@ -20,7 +20,7 @@ pub fn format_size(bytes: u64) -> String {
 
 pub fn parse_size(size_str: &str) -> Result<u64> {
     let size_str = size_str.trim().to_uppercase();
-    
+
     if let Ok(bytes) = u64::from_str(&size_str) {
         return Ok(bytes);
     }
@@ -36,10 +36,14 @@ pub fn parse_size(size_str: &str) -> Result<u64> {
     } else if size_str.ends_with("B") {
         size_str.split_at(size_str.len() - 1)
     } else {
-        return Err(anyhow!("Invalid size format: {}. Use formats like '100MB', '1GB', etc.", size_str));
+        return Err(anyhow!(
+            "Invalid size format: {}. Use formats like '100MB', '1GB', etc.",
+            size_str
+        ));
     };
 
-    let number: f64 = number_part.parse()
+    let number: f64 = number_part
+        .parse()
         .map_err(|_| anyhow!("Invalid number in size: {}", number_part))?;
 
     let multiplier = match unit_part {
