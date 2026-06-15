@@ -1,0 +1,89 @@
+name: Safe Clean
+description: Install and optionally run safe-clean CLI in GitHub Actions
+
+inputs:
+  version:
+    description: "safe-clean version, for example v0.1.0 or latest"
+    required: false
+    default: "latest"
+
+  run:
+    description: "Whether to run safe-clean immediately after installing"
+    required: false
+    default: "false"
+
+  args:
+    description: "Arguments passed to safe-clean when run=true"
+    required: false
+    default: "--help"
+
+runs:
+  using: composite
+  steps:
+    - name: Install safe-clean on Linux/macOS
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64)
+            asset="safe-clean-linux-x86_64.tar.gz"
+            ;;
+          macOS-X64)
+            asset="safe-clean-macos-x86_64.tar.gz"
+            ;;
+          macOS-ARM64)
+            asset="safe-clean-macos-aarch64.tar.gz"
+            ;;
+          *)
+            echo "Unsupported runner: ${RUNNER_OS}-${RUNNER_ARCH}"
+            exit 1
+            ;;
+        esac
+
+        if [ "${{ inputs.version }}" = "latest" ]; then
+          url="https://github.com/pnstack/safe-clean/releases/latest/download/${asset}"
+        else
+          url="https://github.com/pnstack/safe-clean/releases/download/${{ inputs.version }}/${asset}"
+        fi
+
+        install_dir="${RUNNER_TEMP}/safe-clean-bin"
+        mkdir -p "${install_dir}"
+
+        curl -fsSL "${url}" -o "${RUNNER_TEMP}/${asset}"
+        tar -xzf "${RUNNER_TEMP}/${asset}" -C "${install_dir}"
+        chmod +x "${install_dir}/safe-clean"
+
+        echo "${install_dir}" >> "${GITHUB_PATH}"
+
+    - name: Install safe-clean on Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $asset = "safe-clean-windows-x86_64.zip"
+
+        if ("${{ inputs.version }}" -eq "latest") {
+          $url = "https://github.com/pnstack/safe-clean/releases/latest/download/$asset"
+        } else {
+          $url = "https://github.com/pnstack/safe-clean/releases/download/${{ inputs.version }}/$asset"
+        }
+
+        $installDir = "$env:RUNNER_TEMP\safe-clean-bin"
+        New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+
+        $zipPath = "$env:RUNNER_TEMP\"
+        Invoke-WebRequest -Uri $url -OutFile $zipPath
+        Expand-Archive -Path $zipPath -DestinationPath $installDir -Force
+
+        Add-Content -Path $env:GITHUB_PATH -Value $installDir
+
+    - name: Run safe-clean on Linux/macOS
+      if: runner.os != 'Windows' && inputs.run == 'true'
+      shell: bash
+      run: safe-clean ${{ inputs.args }}
+
+    - name: Run safe-clean on Windows
+      if: runner.os == 'Windows' && inputs.run == 'true'
+      shell: pwsh
+      run: safe-clean ${{ inputs.args }}

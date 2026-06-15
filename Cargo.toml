@@ -2,9 +2,14 @@
 name = "safe-clean"
 version = "0.2.0"
 edition = "2021"
-authors = ["npsg02"]
+authors = ["pnstack"]
 description = "Safe disk cleanup CLI/TUI tool"
 license = "MIT"
+repository = "https://github.com/pnstack/safe-clean"
+homepage = "https://github.com/pnstack/safe-clean"
+readme = "README.md"
+keywords = ["cli", "cleanup", "disk", "tui"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
