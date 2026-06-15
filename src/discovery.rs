@@ -8,7 +8,6 @@ pub struct FileItem {
     pub path: PathBuf,
     pub size: u64,
     pub item_count: Option<usize>,
-    pub is_dir: bool,
 }
 
 pub struct DirAnalyzer;
@@ -62,7 +61,6 @@ impl DirAnalyzer {
                     path: entry.path().to_owned(),
                     size,
                     item_count,
-                    is_dir: metadata.is_dir(),
                 });
             }
 
@@ -112,7 +110,6 @@ impl LargeFileFinder {
                             path: entry.path().to_owned(),
                             size: metadata.len(),
                             item_count: None,
-                            is_dir: false,
                         });
                     }
                 }
@@ -162,7 +159,6 @@ impl DevArtifactFinder {
                                         path: entry.path().to_owned(),
                                         size,
                                         item_count: Some(item_count),
-                                        is_dir: true,
                                     });
                                 }
                             }

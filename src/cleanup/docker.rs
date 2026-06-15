@@ -72,7 +72,7 @@ async fn cleanup_containers(dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!("Remove {} stopped containers?", lines.len() - 1))
+        .with_prompt(format!("Remove {} stopped containers?", lines.len() - 1))
         .interact()?
     {
         let result = AsyncCommand::new("docker")
@@ -126,7 +126,7 @@ async fn cleanup_images(dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!("Remove {} dangling images?", lines.len() - 1))
+        .with_prompt(format!("Remove {} dangling images?", lines.len() - 1))
         .interact()?
     {
         let result = AsyncCommand::new("docker")
@@ -181,7 +181,7 @@ async fn cleanup_volumes(dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!("Remove {} unused volumes?", lines.len() - 1))
+        .with_prompt(format!("Remove {} unused volumes?", lines.len() - 1))
         .interact()?
     {
         let result = AsyncCommand::new("docker")
@@ -236,7 +236,7 @@ async fn cleanup_networks(dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!("Remove {} unused networks?", lines.len() - 1))
+        .with_prompt(format!("Remove {} unused networks?", lines.len() - 1))
         .interact()?
     {
         let result = AsyncCommand::new("docker")

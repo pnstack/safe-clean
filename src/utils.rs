@@ -25,15 +25,13 @@ pub fn parse_size(size_str: &str) -> Result<u64> {
         return Ok(bytes);
     }
 
-    let (number_part, unit_part) = if size_str.ends_with("TB") {
+    let (number_part, unit_part) = if size_str.ends_with("TB")
+        || size_str.ends_with("GB")
+        || size_str.ends_with("MB")
+        || size_str.ends_with("KB")
+    {
         size_str.split_at(size_str.len() - 2)
-    } else if size_str.ends_with("GB") {
-        size_str.split_at(size_str.len() - 2)
-    } else if size_str.ends_with("MB") {
-        size_str.split_at(size_str.len() - 2)
-    } else if size_str.ends_with("KB") {
-        size_str.split_at(size_str.len() - 2)
-    } else if size_str.ends_with("B") {
+    } else if size_str.ends_with('B') {
         size_str.split_at(size_str.len() - 1)
     } else {
         return Err(anyhow!(

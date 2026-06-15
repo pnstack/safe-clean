@@ -255,13 +255,10 @@ async fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
                             app.back_to_menu();
                         }
                     }
-                    KeyCode::Enter => match app.current_view {
-                        AppView::Menu => {
-                            if app.execute_menu_action().await? {
-                                break;
-                            }
+                    KeyCode::Enter => if let AppView::Menu = app.current_view {
+                        if app.execute_menu_action().await? {
+                            break;
                         }
-                        _ => {}
                     },
                     KeyCode::Up => match app.current_view {
                         AppView::Menu => app.previous_menu_item(),

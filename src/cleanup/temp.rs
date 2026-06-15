@@ -41,7 +41,7 @@ pub async fn cleanup(dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!(
+        .with_prompt(format!(
             "Clean up {} of temporary files?",
             format_size(total_size)
         ))

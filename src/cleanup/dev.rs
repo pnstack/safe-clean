@@ -59,7 +59,7 @@ pub async fn cleanup(path: Option<String>, dry_run: bool) -> Result<()> {
     }
 
     if Confirm::new()
-        .with_prompt(&format!(
+        .with_prompt(format!(
             "Remove {} development artifacts ({})?",
             artifacts.len(),
             format_size(total_size)
